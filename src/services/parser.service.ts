@@ -10,7 +10,7 @@ export interface Document_details {
 }
 
 
-class documentParserService {
+export  class  DocumentParseService {
 
     // Parses a document buffer and returns its content and metadata
     static async ParseDocument(buffer:Buffer,originalName: string): Promise<Document_details> {
@@ -81,10 +81,5 @@ class documentParserService {
 
           
     }
-
-
-
-
-
 
 }
