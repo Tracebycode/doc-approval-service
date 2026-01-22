@@ -10,7 +10,7 @@ export const  parseContoller = async (req:Request,res:Response,next:NextFunction
 
     }
       const parsedDocument = await DocumentParseService.ParseDocument(file.buffer,file.originalname);
-        return res.status(200).json({data:parsedDocument});
+      return parsedDocument
     }
 
 

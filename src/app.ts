@@ -11,5 +11,14 @@ import parserRoutes from './routes/parser.routes';
 app.use('/api', parserRoutes);
 
 
+// Importing and using auth routes
+import authRoutes from './routes/auth.routes';
+app.use('/api', authRoutes);
+
+// Importing and using post routes
+import postRoutes from './routes/post.routes';
+app.use('/api/posts', postRoutes);
+
+
 export default app;
 
