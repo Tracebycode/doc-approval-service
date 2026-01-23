@@ -1,6 +1,6 @@
 import fs from 'fs'
 import path from 'path'
-import {PostTypes} from '../types/posts'
+import {PostStatus, PostTypes} from '../types/posts'
 
 interface storageshape{
     posts:[]
@@ -40,7 +40,7 @@ export class storageService{
         return storageData.posts;
     }
 
-
+    //future scope if the write want to update the post
     static async updatePostById(id:string,post:PostTypes){
         const storageData =await this.ReadStorage(this.StoragePath);
         const index = storageData.posts.findIndex((post:PostTypes)=>post.id===id);
@@ -49,6 +49,18 @@ export class storageService{
             this.WriteStorage(this.StoragePath,storageData);
         }
     }
+
+
+    //Submitting the post for the approval
+    static async submitPostForApproval(id:string){
+        const storageData =await this.ReadStorage(this.StoragePath);
+        const index = storageData.posts.findIndex((post:PostTypes)=>post.id===id);
+        if(index!==-1){
+            storageData.posts[index].status = PostStatus.PENDING;
+            this.WriteStorage(this.StoragePath,storageData);
+        }
+    }
+    
 
 
 

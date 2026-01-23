@@ -1,6 +1,7 @@
 import {Router} from 'express';
-import { CreatePostController } from '../controllers/post.controller';
+import { CreatePostController ,PostlistController,PostSubmitController} from '../controllers/post.controller';
 import multer from 'multer';
+import { authvalidate } from '../middlewares/auth';
 
 const router = Router();
 
@@ -16,7 +17,9 @@ const upload  = multer({
 
 
 
-router.post('/create',upload.single('file'),CreatePostController);
+router.post('/create',upload.single('file'),authvalidate,CreatePostController);
+router.get('/list',authvalidate,PostlistController);
+router.post('/:id/submit',authvalidate,PostSubmitController);
 
 
 export default router;

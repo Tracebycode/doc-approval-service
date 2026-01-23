@@ -1,5 +1,6 @@
 export interface PostTypes{
     id:string,
+    author:string,
     title:string,
     image?:string,
     content:string,
@@ -12,7 +13,8 @@ export interface PostTypes{
 export enum PostStatus{
     PENDING,
     APPROVED,
-    REJECTED
+    REJECTED,
+    DRAFT
     
 }
 

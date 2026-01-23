@@ -2,11 +2,11 @@ import { Request } from "express";
 
 export const users:Record<string,{password:string;role:'writer'|'manager'}>={
 
-    'writer':{
+    'writer1':{
         password:'writer123',
         role:'writer'
     },
-    'manager':{
+    'manager1':{
         password:'manager123',
         role:'manager'
     }
