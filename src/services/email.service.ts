@@ -47,7 +47,6 @@ export class EmailService{
             `
         };
         const mail = await transporter.sendMail(mailOptions);
-        console.log(mail);
     }
 
 

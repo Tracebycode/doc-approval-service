@@ -1,7 +1,8 @@
 import {Router} from 'express';
-import { CreatePostController ,PostlistController,PostSubmitController} from '../controllers/post.controller';
+import {PostController} from '../controllers/post.controller.ts';
 import multer from 'multer';
-import { authvalidate } from '../middlewares/auth';
+import { authvalidate } from '../middlewares/auth.ts';
+import { requireRole } from '../middlewares/requireRole.ts';
 
 const router = Router();
 
@@ -16,10 +17,16 @@ const upload  = multer({
 
 
 
-
-router.post('/create',upload.single('file'),authvalidate,CreatePostController);
-router.get('/list',authvalidate,PostlistController);
-router.post('/:id/submit',authvalidate,PostSubmitController);
+//create post
+router.post('/create',upload.single('file'),authvalidate,requireRole('writer'),PostController.CreatePostController);
+//post list
+router.get('/list',authvalidate,requireRole('manager'),PostController.PostlistController);
+//post submit
+router.post('/:id/submit',authvalidate,requireRole('writer'),PostController.PostSubmitController);
+//post approve
+router.post('/:id/approve',authvalidate,requireRole('manager'),PostController.ApprovePostController);
+//post reject
+router.post('/:id/reject',authvalidate,requireRole('manager'),PostController.RejectPostController);
 
 
 export default router;

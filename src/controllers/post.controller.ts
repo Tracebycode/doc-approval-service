@@ -7,8 +7,10 @@ import { authrequest } from '../storage/users';
 import { EmailService } from '../services/email.service';
 
 
-//post create controller
-export const CreatePostController = async (req: authrequest, res: Response, next: NextFunction) => {
+export class PostController{
+
+
+    static async CreatePostController(req: authrequest, res: Response, next: NextFunction) {
 
     const file = req.file;
     const author = req.user?.username;
@@ -33,6 +35,7 @@ export const CreatePostController = async (req: authrequest, res: Response, next
 
         await storageService.CreatePost(post);
         res.status(201).json({
+            id:post.id,
             message: "Post created successfully"
         })
     } catch (error) {
@@ -48,7 +51,7 @@ export const CreatePostController = async (req: authrequest, res: Response, next
 
 //post list controller
 
-export const PostlistController = async (req: Request, res: Response, next: NextFunction) => {
+static async PostlistController(req: Request, res: Response, next: NextFunction) {
 
     try {
         const posts = await storageService.GetPosts();
@@ -67,20 +70,15 @@ export const PostlistController = async (req: Request, res: Response, next: Next
 
 //post submit contoller
 
-export const PostSubmitController= async(req:authrequest,res:Response,next:NextFunction)=>{
+static async PostSubmitController(req:authrequest,res:Response,next:NextFunction){
    const {id} = req.params;
-   console.log(id);
    if(!id || Array.isArray(id)){
        return res.status(407).json({
            message:"Invalid post id"
        })
    }
 
-   if(req.user?.role !== 'writer'){
-       return res.status(403).json({
-           message:"Unauthorized"
-       })
-   }
+  
    const post = await storageService.GetPostsbyID(id);
    if(!post){
        return res.status(404).json({
@@ -92,10 +90,113 @@ export const PostSubmitController= async(req:authrequest,res:Response,next:NextF
            message:"Post is not in draft status"
        })
    }
+
+
+
+   let previousstatus = post.status;
+   try{
    await storageService.submitPostForApproval(id)
    await EmailService.sendApproveEmail(post)
-    post.status = PostStatus.PENDING
    res.status(200).json({
+
        message:"Post submitted  and mailed successfully"
-   })
+   })}
+   catch(error){
+       console.log(error)
+       post.status = previousstatus;
+       return res.status(403).json({
+           message:"An unexpected error occurred"
+       })
+   }
+
+
+}
+
+
+
+
+//approve post controller
+
+static async ApprovePostController(req:authrequest,res:Response,next:NextFunction){
+    const {id} = req.params;
+    if(!id || Array.isArray(id)){
+        return res.status(407).json({
+            message:"Invalid post id"
+        })
+    }
+   
+    const post = await storageService.GetPostsbyID(id);
+    if(!post){
+        return res.status(404).json({
+            message:"Post not found"
+        })
+    }
+    if(post.status !== PostStatus.PENDING){
+        return res.status(407).json({
+            message:"Post is not in pending status"
+        })
+    }
+
+
+    let previousstatus = post.status;
+    try{
+    await storageService.approvePost(id)
+    post.status = PostStatus.APPROVED
+    res.status(200).json({
+        message:"Post approved successfully"
+    })
+    }
+    catch(error){
+        console.log(error)
+        post.status = previousstatus;
+        return res.status(403).json({
+            message:"An unexpected error occurred"
+        })
+    }
+    
+}
+
+//reject post controller
+
+static async RejectPostController(req:authrequest,res:Response,next:NextFunction){
+    const {id} = req.params;
+    console.log(id);
+    if(!id || Array.isArray(id)){
+        return res.status(407).json({
+            message:"Invalid post id"
+        })
+    }
+    const post = await storageService.GetPostsbyID(id);
+    if(!post){
+        return res.status(404).json({
+            message:"Post not found"
+        })
+    }
+    if(post.status !== PostStatus.PENDING){
+        return res.status(407).json({
+            message:"Post is not in pending status"
+        })
+    }
+
+
+    let previousstatus = post.status;
+    try{
+    await storageService.rejectPost(id)
+    post.status = PostStatus.REJECTED
+    res.status(200).json({
+        message:"Post rejected successfully"
+    })
+    }
+    catch(error){
+        console.log(error)
+        post.status = previousstatus;
+        return res.status(403).json({
+            message:"An unexpected error occurred"
+        })
+    }
+    
+}
+
+
+
 }

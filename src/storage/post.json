@@ -42,6 +42,15 @@
       "status": 0,
       "createdAt": "Sat Jan 24 2026 18:53:13 GMT+0530 (India Standard Time)",
       "updatedAt": "Sat Jan 24 2026 18:53:13 GMT+0530 (India Standard Time)"
+    },
+    {
+      "id": "4a7b9ae2-339e-4600-89ed-5cea5ffb38b3",
+      "author": "writer1",
+      "title": "//publisher.js",
+      "content": "const amqp = require('amqplib');\nasync function publishData(data) {\nconst connection = await amqp.connect(\"amqp://localhost\");\nconst channel = await connection.createChannel();\nconst exchange = 'publisher_exchange';\nawait channel.assertExchange(exchange, 'fanout', { durable: false });\nchannel.publish(exchange, '', Buffer.from(JSON.stringify(data)));\nconsole.log(\"Data published:\", data);\n}\n//subscriber.js\nconst amqp = require('amqplib');\nasync function subscribeToTopic(topic) {\nconst connection = await amqp.connect(\"amqp://localhost\");\nconst channel = await connection.createChannel();\nconst exchange = 'publisher_exchange';\nconst queue = await channel.assertQueue('', { exclusive: true });\nawait channel.bindQueue(queue.queue, exchange, '');\nconsole.log(\"Subscribed to topic:\", topic);\nchannel.consume(queue.queue, (msg) => {\nif (msg.content) {\nconsole.log(\"Received message:\", msg.content.toString());\n}\n}, { noAck: true });\n}",
+      "status": 0,
+      "createdAt": "Sat Jan 24 2026 23:16:12 GMT+0530 (India Standard Time)",
+      "updatedAt": "Sat Jan 24 2026 23:16:12 GMT+0530 (India Standard Time)"
     }
   ]
 }

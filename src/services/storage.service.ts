@@ -59,13 +59,30 @@ export class storageService{
             storageData.posts[index].status = PostStatus.PENDING;
             this.WriteStorage(this.StoragePath,storageData);
         }
+}
+
+
+
+        static async approvePost(id:string){
+    const storageData =await this.ReadStorage(this.StoragePath);
+    const index = storageData.posts.findIndex((post:PostTypes)=>post.id===id);
+    if(index!==-1){
+        storageData.posts[index].status = PostStatus.APPROVED;
+        this.WriteStorage(this.StoragePath,storageData);
     }
-    
+}
+
+
+    static async rejectPost(id:string){
+    const storageData =await this.ReadStorage(this.StoragePath);
+    const index = storageData.posts.findIndex((post:PostTypes)=>post.id===id);
+    if(index!==-1){
+        storageData.posts[index].status = PostStatus.REJECTED;
+        this.WriteStorage(this.StoragePath,storageData);
+    }
+}
 
 
 
-    
-    
-    
 }
 
