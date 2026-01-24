@@ -4,7 +4,7 @@ import { PostTypes, PostStatus } from '../types/posts';
 import {DocumentParseService} from '../services/parser.service';
 import { v4 as uuidv4 } from 'uuid';
 import { authrequest } from '../storage/users';
-
+import { EmailService } from '../services/email.service';
 
 
 //post create controller
@@ -36,6 +36,7 @@ export const CreatePostController = async (req: authrequest, res: Response, next
             message: "Post created successfully"
         })
     } catch (error) {
+            console.log(error)
         return res.status(403).json({
             message: "An unexpected error occurred"
         })
@@ -56,6 +57,7 @@ export const PostlistController = async (req: Request, res: Response, next: Next
             data: posts
         })
     } catch (error) {
+        console.log(error)
         return res.status(403).json({
             message: "An unexpected error occurred"
         })
@@ -90,10 +92,10 @@ export const PostSubmitController= async(req:authrequest,res:Response,next:NextF
            message:"Post is not in draft status"
        })
    }
-   post.status = PostStatus.PENDING
    await storageService.submitPostForApproval(id)
+   await EmailService.sendApproveEmail(post)
+    post.status = PostStatus.PENDING
    res.status(200).json({
-       message:"Post submitted successfully"
+       message:"Post submitted  and mailed successfully"
    })
-
 }
