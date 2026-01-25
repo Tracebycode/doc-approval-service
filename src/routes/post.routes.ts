@@ -25,9 +25,9 @@ router.get('/list',authvalidate,requireRole('manager'),PostController.PostlistCo
 //post submit
 router.post('/submit',authvalidate,requireRole('writer'),PostController.PostSubmitController);
 //post approve
-router.post('/approve',authvalidate,requireRole('manager'),PostController.ApprovePostController);
+router.get('/approve',authvalidate,requireRole('manager'),PostController.ApprovePostController);
 //post reject
-router.post('/reject',authvalidate,requireRole('manager'),PostController.RejectPostController);
+router.get('/reject',authvalidate,requireRole('manager'),PostController.RejectPostController);
 
 
 export default router;

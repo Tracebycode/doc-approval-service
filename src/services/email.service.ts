@@ -17,41 +17,39 @@ function createTransporte(){
 
 
 // ---- EMAIL SERVICE ----
-export class EmailService{
-   
-    static async sendApproveEmail(post:PostTypes){
-         const approveLink = `${process.env.BaseURL}/post/${post.id}/approve`;
-         const rejectLink = `${process.env.BaseURL}/post/${post.id}/reject`;
+export class EmailService {
+  static async sendApproveEmail(post: PostTypes) {
+    const approveLink = `${process.env.BaseURL}/api/posts/approve?post_id=${post.id}`;
+    const rejectLink  = `${process.env.BaseURL}/api/posts/reject?post_id=${post.id}`;
 
-    
-        const transporter = createTransporte();
+    const transporter = createTransporte();
+    await transporter.verify();
 
-        await transporter.verify();
-        console.log("SMTP ready");
-          const snippet =
-      post.content.length > 100
-        ? post.content.substring(0, 100) + "..."
+    const snippet =
+      post.content.length > 200
+        ? post.content.substring(0, 200) + "..."
         : post.content;
 
-        const mailOptions = {
-            from: `"Doc Approval Service" <${process.env.SMTP_USER}>`,
-            to: process.env.managerEmail,
-            subject: "Post Approval Request",
-            html:`
-             <h2>${post.title}</h2>
-             <img src="${post.image}" alt="Post Image"/>
+    const imageHtml =
+      post.image && post.image.startsWith("http")
+        ? `<img src="${post.image}" style="max-width:300px"/><br/>`
+        : "";
+
+    await transporter.sendMail({
+      from: `"Doc Approval Service" <${process.env.SMTP_USER}>`,
+      to: process.env.managerEmail,
+      subject: "Post Approval Request",
+      html: `
+        <h2>${post.title}</h2>
+        ${imageHtml}
         <p><strong>Summary:</strong></p>
         <p>${snippet}</p>
         <br/>
         <a href="${approveLink}">✅ Approve</a>
         &nbsp;&nbsp;
         <a href="${rejectLink}">❌ Reject</a>
-            `
-        };
-        const mail = await transporter.sendMail(mailOptions);
-    }
-
-
-    
+      `,
+    });
+  }
 }
 

@@ -7,11 +7,10 @@ export const authvalidate=(req:authrequest,res:Response,next:NextFunction)=>{
 
     // ---- AUTH VALIDATION ----
     const authheader = req.header("authorization");
-    if(!authheader){
-        return res.status(401).json({
-            message:"Unauthorized ,please provide authorization header"
-        })
-    }
+    if (!authheader) {
+    res.setHeader("WWW-Authenticate", 'Basic realm="Manager Approval Area"');
+    return res.status(401).send("Authentication required");
+  }
 
     // ---- AUTH VALIDATION ----
     const base64credentials = authheader.split(" ")[1];
