@@ -1,7 +1,8 @@
+// ---- REQUIRE ROLE MIDDLEWARE ----
 import { authrequest } from "../storage/users";
 import { NextFunction, Response } from "express";
 
-
+// ---- REQUIRE ROLE MIDDLEWARE ----
 export const requireRole = (role: 'manager' | 'writer') => {
   return (req: authrequest, res: Response, next: NextFunction) => {
     if (!req.user) {

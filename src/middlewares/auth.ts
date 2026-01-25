@@ -2,8 +2,10 @@ import { Request,Response,NextFunction } from "express";
 import { users } from "../storage/users";
 import {authrequest} from "../storage/users"
 
+// ---- AUTH MIDDLEWARE ----
 export const authvalidate=(req:authrequest,res:Response,next:NextFunction)=>{
 
+    // ---- AUTH VALIDATION ----
     const authheader = req.header("authorization");
     if(!authheader){
         return res.status(401).json({
@@ -11,7 +13,7 @@ export const authvalidate=(req:authrequest,res:Response,next:NextFunction)=>{
         })
     }
 
-
+    // ---- AUTH VALIDATION ----
     const base64credentials = authheader.split(" ")[1];
     const decodedcredentials = Buffer.from(base64credentials,"base64").toString('utf-8');
 
@@ -36,9 +38,5 @@ export const authvalidate=(req:authrequest,res:Response,next:NextFunction)=>{
 
     next();
 
-
-
-
-    
 
 }

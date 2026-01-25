@@ -1,5 +1,7 @@
 import { Request } from "express";
 
+
+//users object
 export const users:Record<string,{password:string;role:'writer'|'manager'}>={
 
     'writer1':{
@@ -14,6 +16,7 @@ export const users:Record<string,{password:string;role:'writer'|'manager'}>={
 
 }
 
+//authrequest interface
 export interface authrequest extends Request{
     user?:{
         username:string,

@@ -2,6 +2,7 @@ import nodemailer from 'nodemailer';
 import { PostTypes} from '../types/posts';
 
 
+// ---- EMAIL SERVICE ----
 function createTransporte(){
     return nodemailer.createTransport({
         host: process.env.SMTP_HOST,
@@ -15,6 +16,7 @@ function createTransporte(){
 }
 
 
+// ---- EMAIL SERVICE ----
 export class EmailService{
    
     static async sendApproveEmail(post:PostTypes){

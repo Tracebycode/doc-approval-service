@@ -3,6 +3,8 @@ import { Response,NextFunction } from 'express';
 import { authrequest } from '../storage/users';
 
     
+
+// ---- AUTH CONTROLLER ----
 export const authcontroller = (req:authrequest,res:Response,next:NextFunction)=>{
 
     const {username,password} = req.body;

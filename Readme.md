@@ -1,28 +1,96 @@
+
 # Doc Approval Service
 
-A lightweight backend service that allows a writer to upload a document, automatically parse its title, content, and optional image reference, and prepare it for an approval workflow.
+A lightweight backend service that allows a writer to upload a document, automatically parse its title, content, and optional image reference, and submit it for manager approval.
+The manager receives an email with a summary and can approve or reject the submission via links.
 
-This project is built as part of an SDE Internship assignment and focuses on **clear separation of concerns, correctness, and simplicity**, as required by the problem statement.
+This project is built as part of an **SDE Internship Assignment**, focusing on correctness, clean workflow logic, and simplicity over overengineering.
 
 ---
 
-## Current Status
+## Features Implemented
 
-✅ **Implemented**
+### ✅ Document Upload & Parsing
 
-* Document upload via API
-* Parsing service for `.txt`, `.md`, and `.docx` files
-* Robust parsing logic for title, content, and optional image reference
-* Error handling for invalid and edge cases
-* Manual verification via API route
+* Supports `.txt`, `.md`, and `.docx` files
+* Automatically extracts:
 
-⏳ **Upcoming**
+  * **Title**
+  * **Content**
+  * **Optional image reference** (only if present as the first line)
+* Validates:
 
-* Submission & approval workflow
-* Email notifications to manager
-* JSON-based persistence
-* Minimal UI
-* Unit tests
+  * Empty documents
+  * Missing title
+  * Missing content
+
+---
+
+### ✅ Authentication (Hardcoded)
+
+* Stateless **Basic Auth**
+* Two roles:
+
+  * **Writer**
+  * **Manager**
+* Credentials are hardcoded as per assignment requirements
+* No sessions, no JWT, no database-backed auth
+
+---
+
+### ✅ Workflow & State Management
+
+Posts follow a strict workflow:
+
+```
+DRAFT → PENDING → APPROVED / REJECTED
+```
+
+* Upload creates a post in `DRAFT`
+* Submit moves post to `PENDING`
+* Manager can only approve/reject `PENDING` posts
+* Invalid state transitions are rejected
+
+---
+
+### ✅ JSON-based Persistence
+
+* No database used (as required by assignment)
+* Posts are stored in a local JSON file
+* Data persists across server restarts
+
+---
+
+### ✅ Email Notification
+
+* When a post is submitted:
+
+  * Manager receives an email with:
+
+    * Post title
+    * Content snippet (first 100 characters)
+    * Approve link
+    * Reject link
+* Uses **Gmail SMTP**
+* If SMTP is unavailable, behavior can be logged (documented in code)
+
+---
+
+### ✅ Manager Approval / Rejection
+
+* Manager-only routes:
+
+  * Approve a post
+  * Reject a post
+* Triggered via email links
+* Updates post status in JSON storage
+
+---
+
+### ✅ Basic Tests
+
+* One unit test for document parser
+* One test covering workflow state transition logic
 
 ---
 
@@ -32,87 +100,119 @@ This project is built as part of an SDE Internship assignment and focuses on **c
 * **Express**
 * **TypeScript**
 * **Multer** (file uploads)
-* **Mammoth** (DOCX text extraction)
+* **Mammoth** (DOCX parsing)
+* **Nodemailer** (email)
+* **UUID** (post IDs)
 
-No database is used at this stage, as per assignment guidelines.
+No database or external services beyond SMTP.
 
 ---
 
-## Project Structure (so far)
+## Project Structure
 
 ```
 src/
+ ├── controllers/
+ │    ├── post.controller.ts
+ │    ├── submit.controller.ts
+ │    └── approval.controller.ts
  ├── services/
- │    └── parser.service.ts     # Core document parsing logic
+ │    ├── parser.service.ts
+ │    ├── storage.service.ts
+ │    └── email.service.ts
+ ├── middleware/
+ │    └── auth.ts
  ├── routes/
- │    └── parser.route.ts       # Temporary route to test parser
- ├── app.ts / server.ts
+ │    ├── posts.route.ts
+ │    └── manager.route.ts
+ ├── storage/
+ │    └── posts.json
+ ├── types/
+ │    └── posts.ts
+ ├── tests/
+ │    ├── parser.test.ts
+ │    └── workflow.test.ts
+ └── app.ts
 ```
 
 ---
 
-## Document Parsing Rules
+## API Overview
 
-The parsing logic follows the assignment specification exactly:
+### Writer APIs
 
-1. Supported file types:
+#### Upload Document
 
-   * `.txt`
-   * `.md`
-   * `.docx`
+```
+POST /api/posts/upload
+```
 
-2. Parsing rules:
+* Auth: Writer
+* Creates a post in `DRAFT` state
 
-   * The **first meaningful line** is treated as the title.
-   * If the **first line is an image reference**:
+#### Submit for Approval
 
-     * Markdown: `![caption](image.png)`
-     * Or a URL
-     * Then it is treated as an optional image reference.
-     * The **next line becomes the title**.
-   * All remaining lines are treated as content.
+```
+POST /api/posts/:id/submit
+```
 
-3. Validation:
-
-   * Empty documents are rejected.
-   * Documents without a valid title are rejected.
-   * Documents without content are rejected.
+* Auth: Writer
+* Moves post from `DRAFT → PENDING`
+* Triggers email to manager
 
 ---
 
-## API Endpoint (Parser Test Route)
+### Manager APIs
 
-This is a **temporary route** used to manually verify parsing logic.
+#### Approve Post
 
-### `POST /api/parse`
-
-**Request**
-
-* `multipart/form-data`
-* Field name: `file`
-* Upload a `.txt`, `.md`, or `.docx` file
-
-**Response (example)**
-
-```json
-{
-  "title": "My Blog Title",
-  "content": "This is the body of the document",
-  "image": "cover.png"
-}
+```
+GET /api/posts/approve?post_id=ID
 ```
 
-**Error response (example)**
+#### Reject Post
 
-```json
-{
-  "error": "Missing title"
-}
+```
+GET /api/posts/reject?post_id=ID
+```
+
+* Auth: Manager
+* Only works for `PENDING` posts
+
+---
+
+## Authentication Details
+
+Authentication is implemented using **stateless Basic Auth** with hardcoded credentials.
+
+### Credentials
+
+| Role    | Username | Password   |
+| ------- | -------- | ---------- |
+| Writer  | writer   | writer123  |
+| Manager | manager  | manager123 |
+
+The client stores credentials and sends them in the `Authorization` header with every request.
+The backend does not maintain any session state.
+
+---
+
+## Environment Setup
+
+Create a `.env` file:
+
+```env
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=yourgmail@gmail.com
+SMTP_PASS=your_app_password
+MANAGER_EMAIL=manager@gmail.com
+BASE_URL=http://localhost:8000
 ```
 
 ---
 
-## How to Run Locally
+## Running Locally
 
 ```bash
 npm install
@@ -130,24 +230,33 @@ http://localhost:8000
 ## Design Decisions
 
 * **No database**:
-  The assignment explicitly allows in-memory or JSON-based storage. At this stage, data persistence is not required.
+  JSON storage was chosen to match assignment constraints and avoid unnecessary infrastructure.
 
-* **Parser as a service**:
-  The document parser is implemented as a standalone service to keep upload logic, parsing logic, and workflow logic clearly separated.
+* **Stateless authentication**:
+  Basic Auth with hardcoded credentials keeps the system simple and predictable.
 
-* **Strict validation**:
-  The parser fails fast on invalid input to avoid corrupt or incomplete data entering the system.
+* **Strict workflow enforcement**:
+  Explicit state transitions prevent accidental overwrites or invalid actions.
+
+* **Clear separation of concerns**:
+  Parsing, storage, workflow, email, and auth are isolated into dedicated modules.
 
 ---
 
 ## Future Improvements
 
-* Add JSON-based persistence for submissions
-* Implement approval workflow (pending → approved/rejected)
-* Add email notifications using SMTP
-* Add unit tests for parser and workflow logic
-* Add minimal UI for writer and manager roles
-* Replace JSON storage with a transactional database if concurrency becomes a concern
+* Replace JSON storage with a transactional database
+* Add proper authentication and authorization
+* Add UI for writer and manager roles
+* Improve test coverage
+* Add retry handling for email delivery
+
+---
+
+## Author
+
+**Abhishek Barik**
+SDE Internship Assignment Project
 
 ---
 

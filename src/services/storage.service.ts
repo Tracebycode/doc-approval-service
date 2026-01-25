@@ -20,6 +20,7 @@ export class StorageService {
     return JSON.parse(raw) as StorageShape;
   }
 
+  //
   private static writeStorage(data: StorageShape): void {
     fs.writeFileSync(
       this.STORAGE_PATH,
@@ -42,7 +43,8 @@ export class StorageService {
   static async getPosts(): Promise<PostTypes[]> {
     return this.readStorage().posts;
   }
-
+  
+//update PoST
   static async updatePost(post: PostTypes): Promise<void> {
     const data = this.readStorage();
     const index = data.posts.findIndex(p => p.id === post.id);

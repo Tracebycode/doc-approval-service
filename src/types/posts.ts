@@ -1,3 +1,4 @@
+//PostTypes interface
 export interface PostTypes{
     id:string,
     author:string,
@@ -10,6 +11,7 @@ export interface PostTypes{
 
 }
 
+//PostStatus enum
 export enum PostStatus{
     PENDING,
     APPROVED,

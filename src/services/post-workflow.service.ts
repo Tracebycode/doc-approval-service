@@ -2,6 +2,8 @@ import { StorageService } from './storage.service';
 import { PostStatus } from '../types/posts';
 import { EmailService } from './email.service';
 
+
+// ---- POST WORKFLOW SERVICE ----
 export class PostWorkflowService {
 
   static async submitPost(id: string) {
@@ -21,6 +23,7 @@ export class PostWorkflowService {
     return post;
   }
 
+// ---- APPROVE POST ----
   static async approvePost(id: string) {
     const post = await StorageService.getPostById(id);
     if (!post) throw new Error('NOT_FOUND');
@@ -36,6 +39,8 @@ export class PostWorkflowService {
     return post;
   }
 
+
+// ---- REJECT POST ----
   static async rejectPost(id: string) {
     const post = await StorageService.getPostById(id);
     if (!post) throw new Error('NOT_FOUND');

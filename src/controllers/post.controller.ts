@@ -6,8 +6,12 @@ import { authrequest } from '../storage/users';
 import { PostStatus, PostTypes } from '../types/posts';
 import { PostWorkflowService } from '../services/post-workflow.service';
 
+
+// ---- POST CONTROLLER ----
+
 export class PostController {
 
+    // ---- CREATE POST ----
   static async CreatePostController(req: authrequest, res: Response) {
     if (!req.file) {
       return res.status(400).json({ message: 'No file uploaded' });
@@ -42,13 +46,16 @@ export class PostController {
     }
   }
 
+  // ---- GET POSTS ----
   static async PostlistController(req: Request, res: Response) {
     const posts = await StorageService.getPosts();
     res.status(200).json({ data: posts });
   }
 
+
+  // ---- SUBMIT POST ----
   static async PostSubmitController(req: authrequest, res: Response) {
-    const { id } = req.params;
+    const id = req.query.post_id as string;
     if (!id || Array.isArray(id)) {
       return res.status(400).json({ message: 'Invalid post id' });
     }
@@ -67,8 +74,10 @@ export class PostController {
     }
   }
 
+
+// ---- APPROVE POST ----
   static async ApprovePostController(req: authrequest, res: Response) {
-    const { id } = req.params;
+    const id = req.query.post_id as string;
 
     try {
       await PostWorkflowService.approvePost(id);
@@ -84,8 +93,9 @@ export class PostController {
     }
   }
 
+// ---- REJECT POST ----
   static async RejectPostController(req: authrequest, res: Response) {
-    const { id } = req.params;
+   const id = req.query.post_id as string;
 
     try {
       await PostWorkflowService.rejectPost(id);
