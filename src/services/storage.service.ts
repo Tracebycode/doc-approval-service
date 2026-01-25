@@ -1,88 +1,57 @@
-import fs from 'fs'
-import path from 'path'
-import {PostStatus, PostTypes} from '../types/posts'
+import fs from 'fs';
+import path from 'path';
+import { PostTypes } from '../types/posts';
 
-interface storageshape{
-    posts:[]
+interface StorageShape {
+  posts: PostTypes[];
 }
 
-export class storageService{
-    private static StoragePath:string=path.join(__dirname,'../storage/post.json')
+export class StorageService {
+  private static STORAGE_PATH = path.join(__dirname, '../storage/post.json');
 
-     private static ReadStorage(StoragePath:string){
+  // ---------- internal helpers ----------
 
-        if(fs.existsSync(StoragePath)){
-            const fileContent = fs.readFileSync(StoragePath,'utf-8');
-            return JSON.parse(fileContent);
-        }
-
+  private static readStorage(): StorageShape {
+    if (!fs.existsSync(this.STORAGE_PATH)) {
+      return { posts: [] };
     }
 
-    private static WriteStorage(StoragePath:string,data:storageshape){
-        fs.writeFileSync(StoragePath,JSON.stringify(data,null,2));
+    const raw = fs.readFileSync(this.STORAGE_PATH, 'utf-8');
+    return JSON.parse(raw) as StorageShape;
+  }
+
+  private static writeStorage(data: StorageShape): void {
+    fs.writeFileSync(
+      this.STORAGE_PATH,
+      JSON.stringify(data, null, 2)
+    );
+  }
+
+  // ---------- public API (persistence only) ----------
+
+  static async createPost(post: PostTypes): Promise<void> {
+    const data = this.readStorage();
+    data.posts.push(post);
+    this.writeStorage(data);
+  }
+
+  static async getPostById(id: string): Promise<PostTypes | undefined> {
+    return this.readStorage().posts.find(p => p.id === id);
+  }
+
+  static async getPosts(): Promise<PostTypes[]> {
+    return this.readStorage().posts;
+  }
+
+  static async updatePost(post: PostTypes): Promise<void> {
+    const data = this.readStorage();
+    const index = data.posts.findIndex(p => p.id === post.id);
+
+    if (index === -1) {
+      throw new Error('POST_NOT_FOUND');
     }
 
-
-    static async CreatePost(post:PostTypes){
-        const  storageData =await this.ReadStorage(this.StoragePath);
-        storageData.posts.push(post);
-        this.WriteStorage(this.StoragePath,storageData);
-    }
-
-    static async GetPostsbyID(id:string){
-        const storageData =await this.ReadStorage(this.StoragePath);
-        return storageData.posts.find((post:PostTypes)=>post.id===id);
-
-    }
-
-    static async GetPosts(){
-        const storageData =await this.ReadStorage(this.StoragePath);
-        return storageData.posts;
-    }
-
-    //future scope if the write want to update the post
-    static async updatePostById(id:string,post:PostTypes){
-        const storageData =await this.ReadStorage(this.StoragePath);
-        const index = storageData.posts.findIndex((post:PostTypes)=>post.id===id);
-        if(index!==-1){
-            storageData.posts[index] = post;
-            this.WriteStorage(this.StoragePath,storageData);
-        }
-    }
-
-
-    //Submitting the post for the approval
-    static async submitPostForApproval(id:string){
-        const storageData =await this.ReadStorage(this.StoragePath);
-        const index = storageData.posts.findIndex((post:PostTypes)=>post.id===id);
-        if(index!==-1){
-            storageData.posts[index].status = PostStatus.PENDING;
-            this.WriteStorage(this.StoragePath,storageData);
-        }
+    data.posts[index] = post;
+    this.writeStorage(data);
+  }
 }
-
-
-
-        static async approvePost(id:string){
-    const storageData =await this.ReadStorage(this.StoragePath);
-    const index = storageData.posts.findIndex((post:PostTypes)=>post.id===id);
-    if(index!==-1){
-        storageData.posts[index].status = PostStatus.APPROVED;
-        this.WriteStorage(this.StoragePath,storageData);
-    }
-}
-
-
-    static async rejectPost(id:string){
-    const storageData =await this.ReadStorage(this.StoragePath);
-    const index = storageData.posts.findIndex((post:PostTypes)=>post.id===id);
-    if(index!==-1){
-        storageData.posts[index].status = PostStatus.REJECTED;
-        this.WriteStorage(this.StoragePath,storageData);
-    }
-}
-
-
-
-}
-
