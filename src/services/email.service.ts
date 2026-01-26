@@ -15,6 +15,16 @@ function createTransporte(){
     })
 }
 
+function isSmtpConfigured() {
+  return (
+    process.env.SMTP_HOST &&
+    process.env.SMTP_PORT &&
+    process.env.SMTP_USER &&
+    process.env.SMTP_PASSWORD
+  );
+}
+
+
 
 // ---- EMAIL SERVICE ----
 export class EmailService {
@@ -22,12 +32,21 @@ export class EmailService {
     const approveLink = `${process.env.BaseURL}/api/posts/approve?post_id=${post.id}`;
     const rejectLink  = `${process.env.BaseURL}/api/posts/reject?post_id=${post.id}`;
 
+
+    //configuration check
+     if (!isSmtpConfigured()) {
+      console.log("📌 SMTP not configured. Approval links:");
+      console.log("1. Approve:", approveLink);
+      console.log("2. Reject :", rejectLink);
+      return;
+    }
+
     const transporter = createTransporte();
     await transporter.verify();
 
     const snippet =
-      post.content.length > 200
-        ? post.content.substring(0, 200) + "..."
+      post.content.length > 1000
+        ? post.content.substring(0, 1000) + "..."
         : post.content;
 
     const imageHtml =

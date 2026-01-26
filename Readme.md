@@ -286,8 +286,10 @@ This avoids frontend complexity while keeping the approval flow secure and audit
 
 ## One Thing I’d Improve
 
-Given more time, I would add a minimal frontend UI for writers and managers
-to make the workflow more user-friendly, while keeping the backend unchanged.
+Given more time, I would add a minimal manager-facing UI
+to preview the full document before approval, instead of
+approving based only on the email summary. This would improve
+usability while keeping the backend workflow unchanged.
 
 
 ---
