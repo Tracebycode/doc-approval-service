@@ -295,10 +295,8 @@ assignment and focus on backend workflow correctness.
 
 ---
 
-## Author
+## Deployed URL: https://doc-approval-service.onrender.com
 
-**Abhishek Barik**
-SDE Internship Assignment Project
 
----
+
 
