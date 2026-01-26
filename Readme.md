@@ -72,7 +72,17 @@ DRAFT → PENDING → APPROVED / REJECTED
     * Approve link
     * Reject link
 * Uses **Gmail SMTP**
-* If SMTP is unavailable, behavior can be logged (documented in code)
+* If SMTP credentials are not provided (e.g. in hosted environments),
+the service logs the approve/reject links to the console instead.
+This keeps the workflow testable without requiring email setup.
+
+## What I Focused On
+
+- Correct interpretation of requirements
+- Clean separation of responsibilities
+- Strict workflow enforcement
+- Minimal but robust authentication
+- Avoiding unnecessary infrastructure
 
 ---
 
@@ -113,26 +123,31 @@ No database or external services beyond SMTP.
 ```
 src/
  ├── controllers/
- │    ├── post.controller.ts
- │    ├── submit.controller.ts
- │    └── approval.controller.ts
- ├── services/
- │    ├── parser.service.ts
- │    ├── storage.service.ts
- │    └── email.service.ts
- ├── middleware/
- │    └── auth.ts
+ │    ├── auth.controller.ts
+ │    └── post.controller.ts
+ ├── middlewares/
+ │    ├── auth.ts
+ │    └── requireRole.ts
  ├── routes/
- │    ├── posts.route.ts
- │    └── manager.route.ts
+ │    ├── auth.routes.ts
+ │    └── post.routes.ts
+ ├── services/
+ │    ├── email.service.ts
+ │    ├── parser.service.ts
+ │    ├── post-workflow.service.ts
+ │    └── storage.service.ts
  ├── storage/
- │    └── posts.json
+ │    ├── post.json
+ │    └── users.ts
  ├── types/
  │    └── posts.ts
- ├── tests/
- │    ├── parser.test.ts
- │    └── workflow.test.ts
- └── app.ts
+ ├── utils/
+ ├── app.ts
+ └── server.ts
+tests/
+ ├── parser.test.ts
+ └── workflow.test.ts
+
 ```
 
 ---
@@ -144,7 +159,7 @@ src/
 #### Upload Document
 
 ```
-POST /api/posts/upload
+POST /api/posts/create
 ```
 
 * Auth: Writer
@@ -189,8 +204,8 @@ Authentication is implemented using **stateless Basic Auth** with hardcoded cred
 
 | Role    | Username | Password   |
 | ------- | -------- | ---------- |
-| Writer  | writer   | writer123  |
-| Manager | manager  | manager123 |
+| Writer  | writer1   | writer123  |
+| Manager | manager1  | manager123 |
 
 The client stores credentials and sends them in the `Authorization` header with every request.
 The backend does not maintain any session state.
@@ -207,7 +222,7 @@ SMTP_PORT=587
 SMTP_USER=yourgmail@gmail.com
 SMTP_PASS=your_app_password
 MANAGER_EMAIL=manager@gmail.com
-BASE_URL=http://localhost:8000
+BASE_URL=http://localhost:3000
 ```
 
 ---
@@ -222,10 +237,25 @@ npm run dev
 Server runs on:
 
 ```
-http://localhost:8000
+http://localhost:3000
 ```
 
 ---
+
+
+## Email Approval Flow
+
+Approve and Reject actions are performed via clickable links sent in email.
+
+When a manager clicks an approval/rejection link:
+1. The browser triggers a Basic Authentication prompt
+2. Manager enters credentials
+3. The request is retried with Authorization headers
+4. The post status is updated
+5. A simple success response is returned
+
+This avoids frontend complexity while keeping the approval flow secure and auditable.
+
 
 ## Design Decisions
 
@@ -250,6 +280,12 @@ http://localhost:8000
 * Add UI for writer and manager roles
 * Improve test coverage
 * Add retry handling for email delivery
+
+## One Thing I’d Improve
+
+Given more time, I would add a minimal frontend UI for writers and managers
+to make the workflow more user-friendly, while keeping the backend unchanged.
+
 
 ---
 
