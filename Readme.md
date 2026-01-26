@@ -76,13 +76,6 @@ DRAFT → PENDING → APPROVED / REJECTED
 the service logs the approve/reject links to the console instead.
 This keeps the workflow testable without requiring email setup.
 
-## What I Focused On
-
-- Correct interpretation of requirements
-- Clean separation of responsibilities
-- Strict workflow enforcement
-- Minimal but robust authentication
-- Avoiding unnecessary infrastructure
 
 ---
 
@@ -101,6 +94,16 @@ This keeps the workflow testable without requiring email setup.
 
 * One unit test for document parser
 * One test covering workflow state transition logic
+
+---
+
+## What I Focused On
+
+- Correct interpretation of requirements
+- Clean separation of responsibilities
+- Strict workflow enforcement
+- Minimal but robust authentication
+- Avoiding unnecessary infrastructure
 
 ---
 
